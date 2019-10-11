@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Pioneer</string>
+    <string name="title_main">Notes</string>
+    <string name="title_info">Note 1</string>
+
+    <string name="button_send_mail">EMAIL</string>
+
+    <string name="info_img_desc">Pulp Fiction</string>
+    <string name="info_text">The path of the righteous man is beset on all sides by the. Inequities of the selfish and the tyranny of evil men. Blessed is he who, in the name of charity and good will. shepherds the weak through the valley of darkness. for he is truly his brother\'s keeper and the finder of lost children. And I will strike down upon thee with great vengeance and furious. Anger those who attempt to poison and destroy my brothers. And you will know. My name is the Lord when I lay my vengeance upon thee.</string>
+
+    <string name="fake_date">2019.10.11</string>
 </resources>

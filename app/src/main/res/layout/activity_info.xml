@@ -9,20 +9,24 @@
     tools:context=".InfoActivity">
 
     <ImageView
-        android:layout_width="wrap_content"
+        android:id="@+id/imgInfo"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:scaleType="centerInside"
-        android:contentDescription="@string/info_img_desc"
-        android:src="@drawable/pulp_fiction" />
+        android:layout_gravity="center_horizontal"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/image_view_des_def"
+        android:src="@drawable/nodata" />
 
     <TextView
+        android:id="@+id/textInfo"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_marginTop="16dp"
+        android:scrollbars="vertical"
         android:textSize="14sp"
         android:textColor="@color/colorGrayText"
-        android:text="@string/info_text" />
+        android:text="@string/temp_text" />
 
 </LinearLayout>

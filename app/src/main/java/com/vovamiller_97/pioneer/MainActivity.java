@@ -1,6 +1,7 @@
 package com.vovamiller_97.pioneer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,8 +17,13 @@ public class MainActivity extends AppCompatActivity {
         setTitle(R.string.title_main);
 
         final RecyclerView recyclerView = findViewById(R.id.noteRecyclerView);
+        final boolean isLandscape = getResources().getBoolean(R.bool.is_landscape);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        if (isLandscape) {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        } else {
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        }
         recyclerView.setHasFixedSize(true);
         recyclerView.getRecycledViewPool().setMaxRecycledViews(0, 10);
 

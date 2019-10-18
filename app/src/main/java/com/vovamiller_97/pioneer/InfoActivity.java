@@ -30,7 +30,6 @@ public class InfoActivity extends AppCompatActivity {
         setTitle(note.getTitle());
 
         final TextView textView = findViewById(R.id.textInfo);
-        textView.setMovementMethod(new ScrollingMovementMethod());
         textView.setText(note.getText());
 
         final ImageView imgView = findViewById(R.id.imgInfo);

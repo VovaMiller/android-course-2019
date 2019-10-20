@@ -57,7 +57,7 @@ public class NoteRepository {
                 R.string.mutant_zombie_info
         };
         int drawableIds[] = new int[] {
-                R.drawable.nodata,
+                R.drawable.mutant_crow,
                 R.drawable.mutant_bloodsucker,
                 R.drawable.mutant_boar,
                 R.drawable.mutant_burer,

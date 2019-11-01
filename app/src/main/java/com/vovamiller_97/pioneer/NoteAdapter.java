@@ -13,7 +13,13 @@ import java.util.List;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
 
+    private EventListener mListener;
     private List<Note> noteList = new ArrayList<>();
+
+    public NoteAdapter(EventListener listener) {
+        super();
+        mListener = listener;
+    }
 
     public void setNoteList(final List<Note> noteList) {
         this.noteList = noteList;
@@ -27,7 +33,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
                 R.layout.note_list_item, parent,
                 false
         );
-        return new NoteViewHolder(view);
+        return new NoteViewHolder(view, mListener);
     }
 
     @Override

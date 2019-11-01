@@ -1,6 +1,5 @@
 package com.vovamiller_97.pioneer;
 
-import android.content.Context;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
@@ -14,14 +13,16 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy.MM.dd",
             Locale.ENGLISH);
 
+    private EventListener mListener;
     private TextView noteTitleTextView;
     private TextView noteTextTextView;
     private TextView noteDateTextView;
     private ImageView noteImageView;
     private String id;
 
-    public NoteViewHolder(final View itemView) {
+    public NoteViewHolder(final View itemView, EventListener listener) {
         super(itemView);
+        mListener = listener;
         noteTitleTextView = itemView.findViewById(R.id.cardViewTitle);
         noteTextTextView = itemView.findViewById(R.id.cardViewText);
         noteDateTextView = itemView.findViewById(R.id.cardViewDate);
@@ -29,8 +30,7 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                final Context context = v.getContext();
-                context.startActivity(InfoActivity.getIntent(context, id));
+                mListener.onChooseNote(id);
             }
         });
     }

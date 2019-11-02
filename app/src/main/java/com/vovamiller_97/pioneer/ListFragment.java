@@ -19,8 +19,6 @@ public class ListFragment extends Fragment {
 
     private EventListener mListener;
 
-    public ListFragment() {}
-
     public static ListFragment newInstance() {
         ListFragment fragment = new ListFragment();
         return fragment;

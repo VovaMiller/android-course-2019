@@ -1,12 +1,11 @@
 package com.vovamiller_97.pioneer;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-
 import android.os.Bundle;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 public class HostActivity extends AppCompatActivity implements EventListener {
 
@@ -30,10 +29,6 @@ public class HostActivity extends AppCompatActivity implements EventListener {
                     .commit();
         } else {
             noteId = savedInstanceState.getString(NOTE_ID_KEY, null);
-            boolean isPhone = getResources().getBoolean(R.bool.is_phone);
-            if (!isPhone && (noteId != null)) {
-                laptopOrientationChanged();
-            }
         }
 
         updateTitle();
@@ -41,34 +36,20 @@ public class HostActivity extends AppCompatActivity implements EventListener {
 
     public void onChooseNote(final String id) {
         FragmentManager fm = getSupportFragmentManager();
-        int backStackSize = fm.getBackStackEntryCount();
-
-        if ((backStackSize == 1) || (backStackSize == 2)) {
-            if (backStackSize == 2) {
-                fm.popBackStack();
-            }
-            boolean isLandscape = getResources().getBoolean(R.bool.is_landscape);
-            boolean isPhone = getResources().getBoolean(R.bool.is_phone);
-            int containerId;
-            if (isLandscape && !isPhone) {
-                containerId = R.id.hostActivityContainer2;
-            } else {
-                containerId = R.id.hostActivityContainer;
-            }
-            fm.beginTransaction()
-                    .setCustomAnimations(
-                            R.anim.enter_from_right,
-                            R.anim.exit_to_left,
-                            R.anim.enter_from_left,
-                            R.anim.exit_to_right)
-                    .replace(containerId, InfoFragment.newInstance(id), TAG_INFO)
-                    .addToBackStack(null)
-                    .commit();
-
-        } else {
-            Log.w("FragmentManager", "backStackSize == " + backStackSize);
-            Log.w("FragmentManager", "onChooseNote: backStackSize isn't in {1, 2}");
+        if (fm.findFragmentByTag(TAG_INFO) != null) {
+            fm.popBackStack();
         }
+
+        fm.beginTransaction()
+                .setCustomAnimations(
+                        R.anim.enter_from_right,
+                        R.anim.exit_to_left,
+                        R.anim.enter_from_left,
+                        R.anim.exit_to_right
+                )
+                .replace(R.id.hostActivityContainer2, InfoFragment.newInstance(id), TAG_INFO)
+                .addToBackStack(null)
+                .commit();
 
         noteId = id;
         updateTitle();
@@ -110,35 +91,5 @@ public class HostActivity extends AppCompatActivity implements EventListener {
                 setTitle(note.getTitle());
             }
         }
-    }
-
-    private void laptopOrientationChanged() {
-        FragmentManager fm = getSupportFragmentManager();
-        boolean isLandscape = getResources().getBoolean(R.bool.is_landscape);
-        Fragment fragmentInfo = fm.findFragmentByTag(TAG_INFO);
-        if (fragmentInfo == null) {
-            fragmentInfo = InfoFragment.newInstance(noteId);
-            Log.d("FragmentManager", "Old InfoFragment wasn't found!");
-        } else {
-            Fragment.SavedState savedState = fm.saveFragmentInstanceState(fragmentInfo);
-            fragmentInfo = InfoFragment.newInstance(noteId);
-            fragmentInfo.setInitialSavedState(savedState);
-        }
-        fm.popBackStack();
-        int container_id;
-        if (isLandscape) {
-            container_id = R.id.hostActivityContainer2;
-        } else {
-            container_id = R.id.hostActivityContainer;
-        }
-        fm.beginTransaction()
-                .setCustomAnimations(
-                        R.anim.enter_from_right,
-                        R.anim.exit_to_left,
-                        R.anim.enter_from_left,
-                        R.anim.exit_to_right)
-                .replace(container_id, fragmentInfo, TAG_INFO)
-                .addToBackStack(null)
-                .commit();
     }
 }

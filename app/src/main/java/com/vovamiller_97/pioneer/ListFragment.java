@@ -17,7 +17,7 @@ import android.view.ViewGroup;
 
 public class ListFragment extends Fragment {
 
-    private EventListener mListener;
+    private OnInteractionListener mListener;
 
     public static ListFragment newInstance() {
         ListFragment fragment = new ListFragment();
@@ -56,8 +56,8 @@ public class ListFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof EventListener) {
-            mListener = (EventListener) context;
+        if (context instanceof OnInteractionListener) {
+            mListener = (OnInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement EventListener");
@@ -70,4 +70,7 @@ public class ListFragment extends Fragment {
         mListener = null;
     }
 
+    public interface OnInteractionListener {
+        void onChooseNote(final String id);
+    }
 }

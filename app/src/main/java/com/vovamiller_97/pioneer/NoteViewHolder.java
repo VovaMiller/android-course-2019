@@ -13,14 +13,14 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy.MM.dd",
             Locale.ENGLISH);
 
-    private EventListener mListener;
+    private ListFragment.OnInteractionListener mListener;
     private TextView noteTitleTextView;
     private TextView noteTextTextView;
     private TextView noteDateTextView;
     private ImageView noteImageView;
     private String id;
 
-    public NoteViewHolder(final View itemView, EventListener listener) {
+    public NoteViewHolder(final View itemView, ListFragment.OnInteractionListener listener) {
         super(itemView);
         mListener = listener;
         noteTitleTextView = itemView.findViewById(R.id.cardViewTitle);

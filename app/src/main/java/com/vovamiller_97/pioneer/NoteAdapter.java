@@ -13,10 +13,10 @@ import java.util.List;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
 
-    private EventListener mListener;
+    private ListFragment.OnInteractionListener mListener;
     private List<Note> noteList = new ArrayList<>();
 
-    public NoteAdapter(EventListener listener) {
+    public NoteAdapter(ListFragment.OnInteractionListener listener) {
         super();
         mListener = listener;
     }

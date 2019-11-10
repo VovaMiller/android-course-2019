@@ -1,27 +1,24 @@
 package com.vovamiller_97.pioneer;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.vovamiller_97.pioneer.db.Note;
 import com.vovamiller_97.pioneer.db.NoteRepository;
 
-import java.io.File;
-import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 
 public class InfoFragment extends Fragment {
@@ -29,6 +26,7 @@ public class InfoFragment extends Fragment {
     private static final String ID_KEY = "ID_KEY";
 
     private long mId;
+    private OnInteractionListener mListener;
 
     public InfoFragment() {}
 
@@ -60,25 +58,101 @@ public class InfoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
-        final Note note = nr.loadNote(mId);
+        // Load note's light info from DB and then load note image.
+        new LoadNoteAsyncTask(this, mId).execute();
+    }
 
-        if (note != null) {
-            final TextView textView = getView().findViewById(R.id.textInfo);
-            textView.setText(note.getText());
+    // Load note from DB.
+    private static class LoadNoteAsyncTask extends AsyncTask<Void, Void, Note> {
+        private WeakReference<InfoFragment> contextRef;
+        private long mId;
 
-            final String imagePath = note.getImage();
-            final ImageView imgView = getView().findViewById(R.id.imgInfo);
-            if (imagePath.length() > 0) {
-                Bitmap bitmap = AppUtils.getBitmap(imagePath);
-                if (bitmap != null) {
-                    imgView.setImageBitmap(bitmap);
-                } else {
-                    imgView.setImageResource(R.drawable.nodata);
+        public LoadNoteAsyncTask(InfoFragment context, long mId) {
+            contextRef = new WeakReference<>(context);
+            this.mId = mId;
+        }
+
+        @Override
+        protected Note doInBackground(final Void... voids) {
+            // Load note from DB.
+            NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
+            return nr.loadNote(mId);
+        }
+
+        @Override
+        public void onPostExecute(final Note note) {
+            InfoFragment context = contextRef.get();
+            if (context == null) return;
+            View view = context.getView();
+            if (view == null) return;
+            super.onPostExecute(note);
+            if (note != null) {
+                if (context.mListener != null) {
+                    context.mListener.changeTitle(note.getTitle());
                 }
-            } else {
-                imgView.setImageResource(R.drawable.nodata);
+                final TextView textView = view.findViewById(R.id.textInfo);
+                textView.setText(note.getText());
+                new InfoFragment.LoadImageAsyncTask(context, note.getImage()).execute();
             }
         }
     }
+
+    // Load image from internal storage.
+    private static class LoadImageAsyncTask extends AsyncTask<Void, Void, Bitmap> {
+        private WeakReference<InfoFragment> contextRef;
+        private String imgPath;
+
+        public LoadImageAsyncTask(InfoFragment context, String imgPath) {
+            contextRef = new WeakReference<>(context);
+            this.imgPath = imgPath;
+        }
+
+        @Override
+        protected Bitmap doInBackground(final Void... voids) {
+            if (imgPath.length() > 0) {
+                return AppUtils.getBitmap(imgPath);
+            }
+            return null;
+        }
+
+        @Override
+        public void onPostExecute(final Bitmap bitmap) {
+            InfoFragment context = contextRef.get();
+            if (context == null) return;
+            View view = context.getView();
+            if (view == null) return;
+            super.onPostExecute(bitmap);
+            final ImageView imgView = view.findViewById(R.id.imgInfo);
+            final ProgressBar progressBar = view.findViewById(R.id.imgInfoLoading);
+            if (bitmap != null) {
+                imgView.setImageBitmap(bitmap);
+            } else {
+                imgView.setImageResource(R.drawable.ic_panorama_light_32dp);
+            }
+            imgView.animate().alpha(1.0f);
+            progressBar.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof OnInteractionListener) {
+            mListener = (OnInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    public interface OnInteractionListener {
+        void changeTitle(String title);
+    }
+
 }

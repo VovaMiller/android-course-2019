@@ -1,6 +1,7 @@
 package com.vovamiller_97.pioneer;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,7 +15,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.vovamiller_97.pioneer.db.Note;
 import com.vovamiller_97.pioneer.db.NoteRepository;
+
+import java.lang.ref.WeakReference;
+import java.util.List;
 
 
 public class ListFragment extends Fragment {
@@ -57,18 +62,40 @@ public class ListFragment extends Fragment {
     }
 
     public void updateList() {
-        NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
-        adapter.setNoteList(nr.loadAll());
+        new UpdateAsyncTask(this).execute();
+    }
+
+    private static class UpdateAsyncTask extends AsyncTask<Void, Void, List<Note>> {
+        private WeakReference<ListFragment> contextRef;
+
+        public UpdateAsyncTask(ListFragment context) {
+            contextRef = new WeakReference<>(context);
+        }
+
+        @Override
+        protected List<Note> doInBackground(final Void... voids) {
+            NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
+            return nr.loadAll();
+        }
+
+        @Override
+        public void onPostExecute(final List<Note> notesList) {
+            ListFragment context = contextRef.get();
+            if (context != null) {
+                super.onPostExecute(notesList);
+                context.adapter.setNoteList(notesList);
+            }
+        }
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof OnInteractionListener) {
             mListener = (OnInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement EventListener");
+                    + " must implement OnInteractionListener");
         }
     }
 
@@ -81,4 +108,5 @@ public class ListFragment extends Fragment {
     public interface OnInteractionListener {
         void onChooseNote(final long id);
     }
+
 }

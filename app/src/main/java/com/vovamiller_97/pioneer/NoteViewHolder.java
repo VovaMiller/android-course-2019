@@ -4,13 +4,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.vovamiller_97.pioneer.db.Note;
+import com.vovamiller_97.pioneer.db.NoteRepository;
 
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Locale;
 
 public class NoteViewHolder extends RecyclerView.ViewHolder {
@@ -47,16 +51,42 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
 
         final String imagePath = note.getImage();
         if (imagePath.length() > 0) {
-            Bitmap bitmap = AppUtils.getBitmap(imagePath);
-            if (bitmap != null) {
-                noteImageView.setImageBitmap(bitmap);
-            } else {
-                noteImageView.setImageResource(R.drawable.nodata);
-            }
+            new SetImgAsyncTask(this, imagePath).execute();
+
         } else {
-            noteImageView.setImageResource(R.drawable.nodata);
+            noteImageView.setImageResource(R.drawable.ic_panorama_light_32dp);
         }
 
         id = note.getId();
     }
+
+    // Get compressed image and assign it to Image View.
+    private static class SetImgAsyncTask extends AsyncTask<Void, Void, Bitmap> {
+        private WeakReference<NoteViewHolder> contextRef;
+        private String imgPath;
+
+        public SetImgAsyncTask(NoteViewHolder context, String imgPath) {
+            contextRef = new WeakReference<>(context);
+            this.imgPath = imgPath;
+        }
+
+        @Override
+        protected Bitmap doInBackground(final Void... voids) {
+            return AppUtils.getBitmap(imgPath + CameraActivity.SUFFIX_COMPRESSED);
+        }
+
+        @Override
+        public void onPostExecute(final Bitmap bitmap) {
+            NoteViewHolder context = contextRef.get();
+            if (context != null) {
+                super.onPostExecute(bitmap);
+                if (bitmap != null) {
+                    context.noteImageView.setImageBitmap(bitmap);
+                } else {
+                    context.noteImageView.setImageResource(R.drawable.ic_panorama_light_32dp);
+                }
+            }
+        }
+    }
+
 }

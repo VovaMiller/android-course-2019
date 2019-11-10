@@ -2,37 +2,44 @@ package com.vovamiller_97.pioneer;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.vovamiller_97.pioneer.db.Note;
-import com.vovamiller_97.pioneer.db.NoteGenerator;
 import com.vovamiller_97.pioneer.db.NoteRepository;
 
-import java.io.File;
-import java.util.Date;
-
-public class HostActivity extends AppCompatActivity implements ListFragment.OnInteractionListener {
+public class HostActivity extends AppCompatActivity
+        implements ListFragment.OnInteractionListener,
+        InfoFragment.OnInteractionListener,
+        NewNoteTaskFragment.TaskCallbacks {
 
     private static final String NOTE_ID_KEY = "NOTE_ID_KEY";
     private static final String TAG_LIST = "TAG_LIST";
     private static final String TAG_INFO = "TAG_INFO";
+    private static final String TAG_TASK_NEW_NOTE = "TAG_TASK_NEW_NOTE";
 
     private Long noteId;
-    FloatingActionButton fab;
+    private FloatingActionButton fab;
+    private NewNoteTaskFragment mNewNoteTaskFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_host);
+
+        FragmentManager fm = getSupportFragmentManager();
+        mNewNoteTaskFragment = (NewNoteTaskFragment) fm.findFragmentByTag(TAG_TASK_NEW_NOTE);
+        if (mNewNoteTaskFragment == null) {
+            mNewNoteTaskFragment = new NewNoteTaskFragment();
+            fm.beginTransaction().add(mNewNoteTaskFragment, TAG_TASK_NEW_NOTE).commit();
+        }
 
         fab = findViewById(R.id.fabOpenCamera);
 
@@ -45,6 +52,9 @@ public class HostActivity extends AppCompatActivity implements ListFragment.OnIn
                     .commit();
         } else {
             noteId = savedInstanceState.getLong(NOTE_ID_KEY);
+            if (noteId == -1) {
+                noteId = null;
+            }
         }
 
         setListeners();
@@ -63,7 +73,30 @@ public class HostActivity extends AppCompatActivity implements ListFragment.OnIn
 
     private void onClickFAB() {
         Intent cameraIntent = new Intent(this, CameraActivity.class);
-        startActivity(cameraIntent);
+        startActivityForResult(cameraIntent, CameraActivity.RESULT_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CameraActivity.RESULT_REQUEST_CODE) {
+            if (resultCode == RESULT_OK && data != null) {
+                long lastModified = data.getLongExtra(CameraActivity.RESULT_KEY_DATE, 0);
+                String imgPath = data.getStringExtra(CameraActivity.RESULT_KEY_PATH);
+
+                // Create new note, add it to DB and update the list.
+                mNewNoteTaskFragment.newTask(lastModified, imgPath);
+            }
+        }
+    }
+
+    // Update the list of notes (called from NewNoteTaskFragment).
+    public void onPostExecute() {
+        FragmentManager fm = getSupportFragmentManager();
+        ListFragment fragmentList = (ListFragment) fm.findFragmentByTag(TAG_LIST);
+        if (fragmentList != null) {
+            fragmentList.updateList();
+        }
     }
 
     public void onChooseNote(final long id) {
@@ -86,7 +119,8 @@ public class HostActivity extends AppCompatActivity implements ListFragment.OnIn
                 .commit();
 
         noteId = id;
-        updateTitle();
+        // Title is now updated directly from InfoFragment.
+        // updateTitle();
     }
 
     @Override
@@ -113,6 +147,8 @@ public class HostActivity extends AppCompatActivity implements ListFragment.OnIn
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         if (noteId != null) {
             outState.putLong(NOTE_ID_KEY, noteId);
+        } else {
+            outState.putLong(NOTE_ID_KEY, -1);
         }
         super.onSaveInstanceState(outState);
     }
@@ -123,11 +159,16 @@ public class HostActivity extends AppCompatActivity implements ListFragment.OnIn
         if ((noteId == null) || (isLandscape && !isPhone)) {
             setTitle(R.string.title_main);
         } else {
-            NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
-            final Note note = nr.loadNote(noteId);
-            if (note != null) {
-                setTitle(note.getTitle());
-            }
+            // see changeTitle(String title)
+        }
+    }
+
+    // Title modification called from InfoFragment.
+    public void changeTitle(String title) {
+        boolean isLandscape = getResources().getBoolean(R.bool.is_landscape);
+        boolean isPhone = getResources().getBoolean(R.bool.is_phone);
+        if (!isLandscape || isPhone) {
+            setTitle(title);
         }
     }
 

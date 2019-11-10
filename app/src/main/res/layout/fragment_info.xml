@@ -9,15 +9,27 @@
     android:background="@android:color/white"
     tools:context=".InfoFragment">
 
-    <ImageView
-        android:id="@+id/imgInfo"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_gravity="center_horizontal"
-        android:scaleType="fitCenter"
-        android:contentDescription="@string/image_view_des_def"
-        android:src="@drawable/nodata" />
+        android:layout_gravity="center_horizontal">
+        <ProgressBar
+            android:id="@+id/imgInfoLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true" />
+        <ImageView
+            android:id="@+id/imgInfo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:alpha="0"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/image_view_des_def"
+            android:src="@drawable/ic_panorama_light_32dp" />
+    </FrameLayout>
 
     <ScrollView
         android:id="@+id/infoScrollView"

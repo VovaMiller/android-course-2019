@@ -9,45 +9,51 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.exifinterface.media.ExifInterface;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.Manifest;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.vovamiller_97.pioneer.db.Note;
-import com.vovamiller_97.pioneer.db.NoteGenerator;
-import com.vovamiller_97.pioneer.db.NoteRepository;
-
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.UUID;
 
 public class CameraActivity extends AppCompatActivity implements ImageCapture.OnImageSavedListener {
 
     private static final int PERMISSION_REQUEST_CODE = 0;
-
-    // TODO: remove later
-    private TextView textView;
+    public static final String SUFFIX_COMPRESSED = "-comp";
+    public static final int RESULT_REQUEST_CODE = 0;
+    public static final String RESULT_KEY_DATE = "date";
+    public static final String RESULT_KEY_PATH = "path";
 
     private CameraView cameraView;
     private View takePictureButton;
     private OrientationDetector mOrientationDetector;
     private int angle;
+    private int shotAngle;
+    private boolean shotTaken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        textView = findViewById(R.id.textViewTest);
+        shotTaken = false;
+        shotAngle = 0;
 
         // Camera view.
         if (savedInstanceState == null) {
@@ -121,13 +127,32 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                cameraView.takePicture(
-                        generatePictureFile(),
-                        AsyncTask.SERIAL_EXECUTOR,
-                        CameraActivity.this
-                );
+                pressButton();
             }
         });
+    }
+
+    private void pressButton() {
+        if (!shotTaken) {
+            shotAngle = angle;
+            shotTaken = true;
+            cameraView.takePicture(
+                    generatePictureFile(),
+                    AsyncTask.SERIAL_EXECUTOR,
+                    CameraActivity.this
+            );
+            takePictureButton.animate()
+                    .scaleX(1.5f)
+                    .scaleY(1.5f)
+                    .alpha(0.0f)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            takePictureButton.setVisibility(View.GONE);
+                        }
+                    });
+        }
     }
 
     private void setExifRotation(@NonNull final File file, int angle) {
@@ -157,36 +182,49 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
         }
     }
 
+    private File saveCompressedCopy(@NonNull final File file) {
+        Bitmap bitmapOriginal = BitmapFactory.decodeFile(file.getAbsolutePath());
+        float wOg = bitmapOriginal.getWidth();
+        float hOg = bitmapOriginal.getHeight();
+        float wCompDPI, hCompDPI;
+        if (wOg >= hOg) {
+            wCompDPI = 96f * (wOg / hOg);
+            hCompDPI= 96f;
+        } else {
+            wCompDPI= 96f ;
+            hCompDPI = 96f * (hOg / wOg);
+        }
+        Resources r = getResources();
+        float wComp = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, wCompDPI, r.getDisplayMetrics());
+        float hComp = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, hCompDPI, r.getDisplayMetrics());
+        Bitmap bitmapCompressed = Bitmap.createScaledBitmap(
+                bitmapOriginal, Math.round(wComp), Math.round(hComp), true);
+        File fileCompressed = new File(getFilesDir(), file.getName() + SUFFIX_COMPRESSED);
+        try (FileOutputStream out = new FileOutputStream(fileCompressed.getAbsolutePath())) {
+            bitmapCompressed.compress(Bitmap.CompressFormat.JPEG, 80, out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return fileCompressed;
+    }
+
     @Override
     public void onImageSaved(@NonNull final File file) {
+        // Save compressed copy of an image for thumbnails.
+        File compressedFile = saveCompressedCopy(file);
+
         // Rotate the image by modifying metadata.
-        setExifRotation(file, angle);
+        setExifRotation(file, shotAngle);
+        setExifRotation(compressedFile, shotAngle);
 
-        // TODO: remove later
-        String message = "New Photo: \"" + file.getName() + "\"";
-        Log.d("CAMCAM", message);
-        
-        // Adding a new note.
-        // TODO: for some reason the app crashes on external device after rotation with >=4 notes
-//        Date date = new Date(file.lastModified());
-//        Note note = NoteGenerator.random(this, date, file.getAbsolutePath());
-//        NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
-//        nr.create(note);
-
-
-//        Handler mainHandler = new Handler(Looper.getMainLooper());
-//        Runnable myRunnable = new Runnable() {
-//            @Override
-//            public void run() {
-//                // Updating the list of notes.
-//                // TODO: update recyclerView content?
-//                FragmentManager fm = getSupportFragmentManager();
-//                // TODO: avoid cast
-//                ListFragment fragment = (ListFragment) fm.findFragmentByTag(TAG_LIST);
-//                fragment.updateList();
-//            }
-//        };
-//        mainHandler.post(myRunnable);
+        // Send info back to HostActivity and finish.
+        Intent output = new Intent();
+        output.putExtra(RESULT_KEY_DATE, file.lastModified());
+        output.putExtra(RESULT_KEY_PATH, file.getAbsolutePath());
+        setResult(RESULT_OK, output);
+        finish();
     }
 
     @Override

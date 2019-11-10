@@ -9,7 +9,7 @@ import java.util.Random;
 import java.util.Date;
 
 /**
- * Temporary class for creating notes with random content.
+ * Temporary class for creating notes with random content (title & text).
  */
 public class NoteGenerator {
 
@@ -55,25 +55,6 @@ public class NoteGenerator {
             R.string.mutant_tushkano_info,
             R.string.mutant_zombie_info
     };
-//    private static final int IDS_DRAWABLE[] = new int[] {
-//            R.drawable.mutant_crow,
-//            R.drawable.mutant_bloodsucker,
-//            R.drawable.mutant_boar,
-//            R.drawable.mutant_burer,
-//            R.drawable.mutant_cat,
-//            R.drawable.mutant_chimera,
-//            R.drawable.mutant_controller,
-//            R.drawable.mutant_dog,
-//            R.drawable.mutant_flesh,
-//            R.drawable.mutant_gigant,
-//            R.drawable.mutant_izlom,
-//            R.drawable.mutant_poltergeist,
-//            R.drawable.mutant_pseudodog,
-//            R.drawable.mutant_rat,
-//            R.drawable.mutant_snork,
-//            R.drawable.mutant_tushkano,
-//            R.drawable.mutant_zombie
-//    };
 
     private NoteGenerator() {}
 
@@ -81,8 +62,10 @@ public class NoteGenerator {
         Note note = new Note();
         int r = RANDOMIZER.nextInt(SET_LENGTH);
 //        int r = ThreadLocalRandom.current().nextInt(SET_LENGTH);
-        note.setText(context.getString(IDS_TEXT[r]));
-        note.setTitle(context.getString(IDS_TITLE[r]));
+        if (context != null) {
+            note.setText(context.getString(IDS_TEXT[r]));
+            note.setTitle(context.getString(IDS_TITLE[r]));
+        }
         note.setImage(image);
         note.setDate(date);
         return note;

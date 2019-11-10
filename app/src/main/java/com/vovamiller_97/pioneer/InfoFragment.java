@@ -1,30 +1,41 @@
 package com.vovamiller_97.pioneer;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.vovamiller_97.pioneer.db.Note;
+import com.vovamiller_97.pioneer.db.NoteRepository;
+
+import java.io.File;
+import java.io.IOException;
+
 
 public class InfoFragment extends Fragment {
 
     private static final String ID_KEY = "ID_KEY";
 
-    private String mId;
+    private long mId;
 
     public InfoFragment() {}
 
-    public static InfoFragment newInstance(String id) {
+    public static InfoFragment newInstance(long id) {
         InfoFragment fragment = new InfoFragment();
         Bundle args = new Bundle();
-        args.putString(ID_KEY, id);
+        args.putLong(ID_KEY, id);
         fragment.setArguments(args);
         return fragment;
     }
@@ -33,7 +44,7 @@ public class InfoFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mId = getArguments().getString(ID_KEY);
+            mId = getArguments().getLong(ID_KEY);
         }
     }
 
@@ -49,12 +60,25 @@ public class InfoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final Note note = NoteRepository.getNoteById(mId);
+        NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
+        final Note note = nr.loadNote(mId);
 
-        final TextView textView = getView().findViewById(R.id.textInfo);
-        textView.setText(note.getText());
+        if (note != null) {
+            final TextView textView = getView().findViewById(R.id.textInfo);
+            textView.setText(note.getText());
 
-        final ImageView imgView = getView().findViewById(R.id.imgInfo);
-        imgView.setImageResource(note.getDrawableIdRes());
+            final String imagePath = note.getImage();
+            final ImageView imgView = getView().findViewById(R.id.imgInfo);
+            if (imagePath.length() > 0) {
+                Bitmap bitmap = AppUtils.getBitmap(imagePath);
+                if (bitmap != null) {
+                    imgView.setImageBitmap(bitmap);
+                } else {
+                    imgView.setImageResource(R.drawable.nodata);
+                }
+            } else {
+                imgView.setImageResource(R.drawable.nodata);
+            }
+        }
     }
 }

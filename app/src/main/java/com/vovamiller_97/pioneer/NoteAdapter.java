@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.vovamiller_97.pioneer.db.Note;
+
 import java.util.ArrayList;
 import java.util.List;
 

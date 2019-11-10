@@ -1,9 +1,11 @@
 package com.vovamiller_97.pioneer;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,18 +13,20 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.vovamiller_97.pioneer.db.Note;
+import com.vovamiller_97.pioneer.db.NoteGenerator;
+import com.vovamiller_97.pioneer.db.NoteRepository;
 
 import java.io.File;
+import java.util.Date;
 
-public class HostActivity extends AppCompatActivity
-        implements ListFragment.OnInteractionListener,CameraFragment.OnInteractionListener {
+public class HostActivity extends AppCompatActivity implements ListFragment.OnInteractionListener {
 
     private static final String NOTE_ID_KEY = "NOTE_ID_KEY";
     private static final String TAG_LIST = "TAG_LIST";
     private static final String TAG_INFO = "TAG_INFO";
-    private static final String TAG_CAMERA = "TAG_CAMERA";
 
-    private String noteId;
+    private Long noteId;
     FloatingActionButton fab;
 
     @Override
@@ -40,7 +44,7 @@ public class HostActivity extends AppCompatActivity
                     .addToBackStack(null)
                     .commit();
         } else {
-            noteId = savedInstanceState.getString(NOTE_ID_KEY, null);
+            noteId = savedInstanceState.getLong(NOTE_ID_KEY);
         }
 
         setListeners();
@@ -52,12 +56,17 @@ public class HostActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openCamera();
+                onClickFAB();
             }
         });
     }
 
-    public void onChooseNote(final String id) {
+    private void onClickFAB() {
+        Intent cameraIntent = new Intent(this, CameraActivity.class);
+        startActivity(cameraIntent);
+    }
+
+    public void onChooseNote(final long id) {
         FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(TAG_INFO) != null) {
             fm.popBackStack();
@@ -103,7 +112,7 @@ public class HostActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         if (noteId != null) {
-            outState.putString(NOTE_ID_KEY, noteId);
+            outState.putLong(NOTE_ID_KEY, noteId);
         }
         super.onSaveInstanceState(outState);
     }
@@ -114,7 +123,8 @@ public class HostActivity extends AppCompatActivity
         if ((noteId == null) || (isLandscape && !isPhone)) {
             setTitle(R.string.title_main);
         } else {
-            Note note = NoteRepository.getNoteById(noteId);
+            NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
+            final Note note = nr.loadNote(noteId);
             if (note != null) {
                 setTitle(note.getTitle());
             }
@@ -124,35 +134,11 @@ public class HostActivity extends AppCompatActivity
     private void updateFloatingButtonState() {
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment_info = fm.findFragmentByTag(TAG_INFO);
-        Fragment fragment_camera = fm.findFragmentByTag(TAG_CAMERA);
-        if ((fragment_info != null) || (fragment_camera != null)) {
+        if (fragment_info != null) {
             fab.setVisibility(View.GONE);
         } else {
             fab.setVisibility(View.VISIBLE);
         }
     }
 
-    private void openCamera() {
-        fab.setVisibility(View.GONE);
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.hostActivityContainerAll, CameraFragment.newInstance(), TAG_CAMERA)
-                .addToBackStack(null)
-                .commit();
-    }
-
-    public void onPhotoTaken(@NonNull final File file) {
-        String message = "New Photo: \"" + file.getName() + "\"";
-        Log.d("CAMCAM", message);
-//        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        // https://stackoverflow.com/questions/3875184/cant-create-handler-inside-thread-that-has-not-called-looper-prepare
-    }
-
-    public void finishCameraFragment() {
-        FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentByTag(TAG_CAMERA);
-        if (fragment != null) {
-            onBackPressed();
-        }
-    }
 }

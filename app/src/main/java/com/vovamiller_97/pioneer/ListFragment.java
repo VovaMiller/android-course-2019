@@ -14,9 +14,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.vovamiller_97.pioneer.db.NoteRepository;
+
 
 public class ListFragment extends Fragment {
 
+    private NoteAdapter adapter;
     private OnInteractionListener mListener;
 
     public static ListFragment newInstance() {
@@ -48,9 +51,14 @@ public class ListFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.getRecycledViewPool().setMaxRecycledViews(0, 10);
 
-        final NoteAdapter adapter = new NoteAdapter(mListener);
+        adapter = new NoteAdapter(mListener);
         recyclerView.setAdapter(adapter);
-        adapter.setNoteList(NoteRepository.getNoteList());
+        updateList();
+    }
+
+    public void updateList() {
+        NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
+        adapter.setNoteList(nr.loadAll());
     }
 
     @Override
@@ -71,6 +79,6 @@ public class ListFragment extends Fragment {
     }
 
     public interface OnInteractionListener {
-        void onChooseNote(final String id);
+        void onChooseNote(final long id);
     }
 }

@@ -1,9 +1,14 @@
 package com.vovamiller_97.pioneer;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.vovamiller_97.pioneer.db.Note;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -18,7 +23,7 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
     private TextView noteTextTextView;
     private TextView noteDateTextView;
     private ImageView noteImageView;
-    private String id;
+    private long id;
 
     public NoteViewHolder(final View itemView, ListFragment.OnInteractionListener listener) {
         super(itemView);
@@ -39,7 +44,19 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
         noteTitleTextView.setText(note.getTitle());
         noteTextTextView.setText(note.getText());
         noteDateTextView.setText(SDF.format(note.getDate()));
-        noteImageView.setImageResource(note.getDrawableIdRes());
+
+        final String imagePath = note.getImage();
+        if (imagePath.length() > 0) {
+            Bitmap bitmap = AppUtils.getBitmap(imagePath);
+            if (bitmap != null) {
+                noteImageView.setImageBitmap(bitmap);
+            } else {
+                noteImageView.setImageResource(R.drawable.nodata);
+            }
+        } else {
+            noteImageView.setImageResource(R.drawable.nodata);
+        }
+
         id = note.getId();
     }
 }

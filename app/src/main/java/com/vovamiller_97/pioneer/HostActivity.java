@@ -1,43 +1,139 @@
 package com.vovamiller_97.pioneer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-public class HostActivity extends AppCompatActivity implements EventListener {
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+public class HostActivity extends AppCompatActivity
+        implements ListFragment.OnInteractionListener,
+        TaskFragment.TaskCallbacks {
 
     private static final String NOTE_ID_KEY = "NOTE_ID_KEY";
+    private static final String NOTE_TITLE_KEY = "NOTE_TITLE_KEY";
     private static final String TAG_LIST = "TAG_LIST";
     private static final String TAG_INFO = "TAG_INFO";
+    private static final String TAG_TASK_NEW_NOTE = "TAG_TASK_NEW_NOTE";
 
-    private String noteId;
+    private Long noteId;
+    private String noteTitle;
+    private FloatingActionButton fab;
+    private TaskFragment mTaskFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_host);
 
+        // Hide soft keyboard as it can show up after rotation even it was hidden before.
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+        // Launch special fragment for proper processing of background tasks.
+        FragmentManager fm = getSupportFragmentManager();
+        mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_NEW_NOTE);
+        if (mTaskFragment == null) {
+            mTaskFragment = new TaskFragment();
+            fm.beginTransaction().add(mTaskFragment, TAG_TASK_NEW_NOTE).commit();
+        }
+
+        fab = findViewById(R.id.fabOpenCamera);
+
         if (savedInstanceState == null) {
             noteId = null;
+            noteTitle = null;
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.hostActivityContainer, ListFragment.newInstance(), TAG_LIST)
                     .addToBackStack(null)
                     .commit();
         } else {
-            noteId = savedInstanceState.getString(NOTE_ID_KEY, null);
+            noteId = savedInstanceState.getLong(NOTE_ID_KEY);
+            if (noteId == -1) {
+                noteId = null;
+            }
+            noteTitle = savedInstanceState.getString(NOTE_TITLE_KEY, null);
         }
 
+        setListeners();
         updateTitle();
+        updateFloatingButtonState();
     }
 
-    public void onChooseNote(final String id) {
+    private void setListeners() {
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickFAB();
+            }
+        });
+    }
+
+    private void onClickFAB() {
+        Intent cameraIntent = new Intent(this, CameraActivity.class);
+        startActivityForResult(cameraIntent, CameraActivity.RESULT_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CameraActivity.RESULT_REQUEST_CODE) {
+            if (resultCode == RESULT_OK && data != null) {
+                long lastModified = data.getLongExtra(CameraActivity.RESULT_KEY_DATE, 0);
+                String imgPath = data.getStringExtra(CameraActivity.RESULT_KEY_PATH);
+
+                // Create new note, add it to DB and update the list.
+                mTaskFragment.newNote(lastModified, imgPath);
+            }
+        }
+    }
+
+    // Callback from TaskFragment after creating a note.
+    public void onPostExecuteNewNote() {
+        updateList();
+    }
+
+    // Callback from TaskFragment after updating a note's text.
+    public void onPostExecuteUpdateText(boolean failed) {
+        if (failed) {
+            Toast.makeText(this,
+                    getString(R.string.noteSaveFail),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this,
+                    getString(R.string.noteSaveSuccess),
+                    Toast.LENGTH_SHORT).show();
+            updateList();
+        }
+    }
+
+    // Update the list of notes.
+    private void updateList() {
+        FragmentManager fm = getSupportFragmentManager();
+        ListFragment fragmentList = (ListFragment) fm.findFragmentByTag(TAG_LIST);
+        if (fragmentList != null) {
+            fragmentList.updateList();
+        }
+    }
+
+    public void onChooseNote(final long id, final String title, final String imgPath) {
         FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(TAG_INFO) != null) {
             fm.popBackStack();
+        } else {
+            fab.setVisibility(View.GONE);
         }
 
         fm.beginTransaction()
@@ -47,12 +143,14 @@ public class HostActivity extends AppCompatActivity implements EventListener {
                         R.anim.enter_from_left,
                         R.anim.exit_to_right
                 )
-                .replace(R.id.hostActivityContainer2, InfoFragment.newInstance(id), TAG_INFO)
+                .replace(R.id.hostActivityContainer2, InfoFragment.newInstance(id, imgPath), TAG_INFO)
                 .addToBackStack(null)
                 .commit();
 
         noteId = id;
+        noteTitle = title;
         updateTitle();
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -61,11 +159,16 @@ public class HostActivity extends AppCompatActivity implements EventListener {
         int backStackSize = fm.getBackStackEntryCount();
 
         if (backStackSize == 1) {
+            // We see the list only.
             finish();
         } else if (backStackSize == 2) {
+            // A note is opened.
             super.onBackPressed();
+            fab.setVisibility(View.VISIBLE);
             noteId = null;
+            noteTitle = null;
             updateTitle();
+            invalidateOptionsMenu();
         } else {
             Log.w("FragmentManager", "backStackSize == " + backStackSize);
             Log.w("FragmentManager", "onBackPressed: backStackSize isn't in {1, 2}");
@@ -75,7 +178,12 @@ public class HostActivity extends AppCompatActivity implements EventListener {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         if (noteId != null) {
-            outState.putString(NOTE_ID_KEY, noteId);
+            outState.putLong(NOTE_ID_KEY, noteId);
+        } else {
+            outState.putLong(NOTE_ID_KEY, -1);
+        }
+        if (noteTitle != null) {
+            outState.putString(NOTE_TITLE_KEY, noteTitle);
         }
         super.onSaveInstanceState(outState);
     }
@@ -85,11 +193,52 @@ public class HostActivity extends AppCompatActivity implements EventListener {
         boolean isPhone = getResources().getBoolean(R.bool.is_phone);
         if ((noteId == null) || (isLandscape && !isPhone)) {
             setTitle(R.string.title_main);
+        } else if (noteTitle != null) {
+            setTitle(noteTitle);
         } else {
-            Note note = NoteRepository.getNoteById(noteId);
-            if (note != null) {
-                setTitle(note.getTitle());
-            }
+            setTitle(R.string.title_main);
         }
     }
+
+    private void updateFloatingButtonState() {
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment fragment_info = fm.findFragmentByTag(TAG_INFO);
+        if (fragment_info != null) {
+            fab.setVisibility(View.GONE);
+        } else {
+            fab.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_app, menu);
+        MenuItem saveNoteButton = menu.findItem(R.id.saveNoteButton);
+        if (saveNoteButton != null) {
+            saveNoteButton.setVisible(noteId != null);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.saveNoteButton:
+                onSaveNoteButtonPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void onSaveNoteButtonPressed() {
+        EditText editText = findViewById(R.id.textInfo);
+        if ((noteId != null) && (editText != null)) {
+            String newText = editText.getText().toString();
+            mTaskFragment.updateText(noteId, newText);
+        } else {
+            onPostExecuteUpdateText(true);
+        }
+    }
+
 }

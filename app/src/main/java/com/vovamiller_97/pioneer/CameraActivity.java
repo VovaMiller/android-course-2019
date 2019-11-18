@@ -7,7 +7,6 @@ import androidx.camera.core.ImageCapture;
 import androidx.camera.view.CameraView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.exifinterface.media.ExifInterface;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -15,12 +14,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.Manifest;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
@@ -28,14 +24,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.UUID;
 
 public class CameraActivity extends AppCompatActivity implements ImageCapture.OnImageSavedListener {
 
     private static final int PERMISSION_REQUEST_CODE = 0;
-    public static final String SUFFIX_COMPRESSED = "-comp";
     public static final int RESULT_REQUEST_CODE = 0;
     public static final String RESULT_KEY_DATE = "date";
     public static final String RESULT_KEY_PATH = "path";
@@ -124,12 +117,7 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
         cameraView.bindToLifecycle(this);
 
         takePictureButton = findViewById(R.id.takePictureButton);
-        takePictureButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                pressButton();
-            }
-        });
+        takePictureButton.setOnClickListener(view -> pressButton());
     }
 
     private void pressButton() {
@@ -155,69 +143,13 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
         }
     }
 
-    private void setExifRotation(@NonNull final File file, int angle) {
-        int nAngle = ((angle % 360) + 360) % 360;
-        int orientation = ExifInterface.ORIENTATION_UNDEFINED;
-        switch (nAngle) {
-            case 0:
-                orientation = ExifInterface.ORIENTATION_ROTATE_90;
-                break;
-            case 90:
-                orientation = ExifInterface.ORIENTATION_NORMAL;
-                break;
-            case 180:
-                orientation = ExifInterface.ORIENTATION_ROTATE_270;
-                break;
-            case 270:
-                orientation = ExifInterface.ORIENTATION_ROTATE_180;
-                break;
-        }
-        try {
-            ExifInterface exifInterface = new ExifInterface(file.getAbsolutePath());
-            exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(orientation));
-            exifInterface.saveAttributes();
-        } catch (IOException e) {
-            Log.e("CameraActivity", "IOException");
-            e.printStackTrace();
-        }
-    }
-
-    private File saveCompressedCopy(@NonNull final File file) {
-        Bitmap bitmapOriginal = BitmapFactory.decodeFile(file.getAbsolutePath());
-        float wOg = bitmapOriginal.getWidth();
-        float hOg = bitmapOriginal.getHeight();
-        float wCompDPI, hCompDPI;
-        if (wOg >= hOg) {
-            wCompDPI = 96f * (wOg / hOg);
-            hCompDPI= 96f;
-        } else {
-            wCompDPI= 96f ;
-            hCompDPI = 96f * (hOg / wOg);
-        }
-        Resources r = getResources();
-        float wComp = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, wCompDPI, r.getDisplayMetrics());
-        float hComp = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, hCompDPI, r.getDisplayMetrics());
-        Bitmap bitmapCompressed = Bitmap.createScaledBitmap(
-                bitmapOriginal, Math.round(wComp), Math.round(hComp), true);
-        File fileCompressed = new File(getFilesDir(), file.getName() + SUFFIX_COMPRESSED);
-        try (FileOutputStream out = new FileOutputStream(fileCompressed.getAbsolutePath())) {
-            bitmapCompressed.compress(Bitmap.CompressFormat.JPEG, 80, out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return fileCompressed;
-    }
-
     @Override
     public void onImageSaved(@NonNull final File file) {
-        // Save compressed copy of an image for thumbnails.
-        File compressedFile = saveCompressedCopy(file);
+        // Save compressed copy of an image for thumbnails (preview).
+        new CreateCompressedCopy(file, getResources(), getFilesDir(), shotAngle).execute();
 
         // Rotate the image by modifying metadata.
-        setExifRotation(file, shotAngle);
-        setExifRotation(compressedFile, shotAngle);
+        AppUtils.setExifRotation(file, shotAngle);
 
         // Send info back to HostActivity and finish.
         Intent output = new Intent();
@@ -225,6 +157,31 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
         output.putExtra(RESULT_KEY_PATH, file.getAbsolutePath());
         setResult(RESULT_OK, output);
         finish();
+    }
+
+    // Compressed image copy creation (+rotation).
+    private static class CreateCompressedCopy extends AsyncTask<Void, Void, Void> {
+        private final File file;
+        private final Resources resources;
+        private final File filesDir;
+        private int shotAngle;
+
+        public CreateCompressedCopy(@NonNull File file,
+                                    @NonNull final Resources resources,
+                                    @NonNull final File filesDir,
+                                    int shotAngle) {
+            this.file = file;
+            this.resources = resources;
+            this.filesDir = filesDir;
+            this.shotAngle = shotAngle;
+        }
+
+        @Override
+        protected Void doInBackground(final Void... voids) {
+            File compressedFile = AppUtils.saveCompressedCopy(file, resources, filesDir);
+            AppUtils.setExifRotation(compressedFile, shotAngle);
+            return null;
+        }
     }
 
     @Override

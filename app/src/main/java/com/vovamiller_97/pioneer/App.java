@@ -3,7 +3,6 @@ package com.vovamiller_97.pioneer;
 import android.app.Application;
 
 import com.vovamiller_97.pioneer.db.DatabaseHolder;
-import com.vovamiller_97.pioneer.db.NoteRepository;
 
 public class App extends Application {
 

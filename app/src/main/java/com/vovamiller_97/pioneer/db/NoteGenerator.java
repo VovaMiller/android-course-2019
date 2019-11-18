@@ -17,7 +17,7 @@ public class NoteGenerator {
 
     private static final int SET_LENGTH = 17;
 
-    private static final int IDS_TITLE[] = new int[] {
+    private static final int[] IDS_TITLE = new int[] {
             R.string.mutant_crow,
             R.string.mutant_bloodsucker,
             R.string.mutant_boar,
@@ -36,7 +36,7 @@ public class NoteGenerator {
             R.string.mutant_tushkano,
             R.string.mutant_zombie
     };
-    private static final int IDS_TEXT[] = new int[] {
+    private static final int[] IDS_TEXT = new int[] {
             R.string.mutant_crow_info,
             R.string.mutant_bloodsucker_info,
             R.string.mutant_boar_info,

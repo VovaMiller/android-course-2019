@@ -18,7 +18,9 @@
             android:name=".CameraActivity"
             android:theme="@style/AppTheme.Camera"
             android:screenOrientation="portrait" />
-        <activity android:name=".HostActivity">
+        <activity
+            android:name=".HostActivity"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

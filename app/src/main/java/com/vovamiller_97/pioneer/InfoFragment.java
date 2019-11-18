@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,9 +14,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.squareup.picasso.Picasso;
 import com.vovamiller_97.pioneer.db.Note;
 import com.vovamiller_97.pioneer.db.NoteRepository;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 
 
@@ -28,6 +29,8 @@ public class InfoFragment extends Fragment {
 
     private long mId;
     private String imgPath;
+    private ImageView imgView;
+    private ProgressBar progressBar;
 
     public InfoFragment() {}
 
@@ -61,6 +64,9 @@ public class InfoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        imgView = getView().findViewById(R.id.imgInfo);
+        progressBar = getView().findViewById(R.id.imgInfoLoading);
+
         if (savedInstanceState == null) {
             // Fragment has just been created for the first time.
             // Load note's light info from DB and then load note image.
@@ -68,7 +74,7 @@ public class InfoFragment extends Fragment {
         } else {
             // Fragment has been recreated.
             // Load the note image again.
-            new LoadImageAsyncTask(this, imgPath).execute();
+            loadImage(imgPath);
         }
     }
 
@@ -99,46 +105,32 @@ public class InfoFragment extends Fragment {
             if (note != null) {
                 final EditText editTextView = view.findViewById(R.id.textInfo);
                 editTextView.setText(note.getText());
-                new InfoFragment.LoadImageAsyncTask(context, note.getImage()).execute();
+                context.loadImage(note.getImage());
             }
         }
     }
 
-    // Load image from internal storage.
-    private static class LoadImageAsyncTask extends AsyncTask<Void, Void, Bitmap> {
-        private WeakReference<InfoFragment> contextRef;
-        private String imgPath;
+    private void loadImage(final String imgPath) {
+        Picasso
+                .get()
+                .load(new File(imgPath))
+                .fit()
+                .centerInside()
+                .into(imgView, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        imgView.animate().alpha(1.0f);
+                        progressBar.setVisibility(View.GONE);
+                    }
 
-        public LoadImageAsyncTask(InfoFragment context, String imgPath) {
-            contextRef = new WeakReference<>(context);
-            this.imgPath = imgPath;
-        }
-
-        @Override
-        protected Bitmap doInBackground(final Void... voids) {
-            if (imgPath.length() > 0) {
-                return AppUtils.getBitmap(imgPath);
-            }
-            return null;
-        }
-
-        @Override
-        public void onPostExecute(final Bitmap bitmap) {
-            InfoFragment context = contextRef.get();
-            if (context == null) return;
-            View view = context.getView();
-            if (view == null) return;
-            super.onPostExecute(bitmap);
-            final ImageView imgView = view.findViewById(R.id.imgInfo);
-            final ProgressBar progressBar = view.findViewById(R.id.imgInfoLoading);
-            if (bitmap != null) {
-                imgView.setImageBitmap(bitmap);
-            } else {
-                imgView.setImageResource(R.drawable.ic_panorama_light_32dp);
-            }
-            imgView.animate().alpha(1.0f);
-            progressBar.setVisibility(View.GONE);
-        }
+                    @Override
+                    public void onError(Exception e) {
+                        e.printStackTrace();
+                        imgView.setImageResource(R.drawable.ic_panorama_light_32dp);
+                        imgView.animate().alpha(1.0f);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
     }
 
 }

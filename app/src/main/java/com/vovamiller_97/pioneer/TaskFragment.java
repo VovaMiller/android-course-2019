@@ -19,14 +19,12 @@ import java.util.Date;
 public class TaskFragment extends Fragment {
 
     private TaskCallbacks mCallbacks;
-    private Context mContext;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof TaskCallbacks) {
             mCallbacks = (TaskCallbacks) context;
-            mContext = context;
         } else {
             throw new RuntimeException(context.toString() + " must implement TaskCallbacks");
         }
@@ -44,7 +42,6 @@ public class TaskFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mCallbacks = null;
-        mContext = null;
     }
 
     private class NewNoteTask extends AsyncTask<Void, Void, Void> {
@@ -60,7 +57,7 @@ public class TaskFragment extends Fragment {
         protected Void doInBackground(Void... ignore) {
             // Adding a new note.
             Date date = new Date(lastModified);
-            Note note = NoteGenerator.random(mContext, date, imgPath);
+            Note note = NoteGenerator.random(getContext(), date, imgPath);
             NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
             nr.create(note);
             return null;

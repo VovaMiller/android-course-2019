@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -37,9 +36,6 @@ public class HostActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_host);
-
-        // Hide soft keyboard as it can show up after rotation even it was hidden before.
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         // Launch special fragment for proper processing of background tasks.
         FragmentManager fm = getSupportFragmentManager();
@@ -73,12 +69,7 @@ public class HostActivity extends AppCompatActivity
     }
 
     private void setListeners() {
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onClickFAB();
-            }
-        });
+        fab.setOnClickListener(view -> onClickFAB());
     }
 
     private void onClickFAB() {

@@ -1,6 +1,7 @@
 package com.vovamiller_97.pioneer;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -85,13 +86,35 @@ public class HostActivity extends AppCompatActivity
                 long lastModified = data.getLongExtra(CameraActivity.RESULT_KEY_DATE, 0);
                 String imgPath = data.getStringExtra(CameraActivity.RESULT_KEY_PATH);
 
-                // Create new note, add it to DB and update the list.
-                mTaskFragment.newNote(lastModified, imgPath);
+                // Start the chain of note creation:
+                // 1) Load bitmap.
+                // 2) Recognize text.
+                // 3) Create note itself.
+                mTaskFragment.loadBitmap(lastModified, imgPath);
             }
         }
     }
 
-    // Callback from TaskFragment after creating a note.
+    // Callback from TaskFragment after loading bitmap (note creation, step 1 of 3).
+    public void onBitmapLoaded(long lastModified, final String imgPath, final Bitmap bitmap) {
+        if (bitmap == null) {
+            mTaskFragment.newNote(lastModified, imgPath, "");
+        } else {
+            mTaskFragment.recognizeText(lastModified, imgPath, bitmap);
+        }
+    }
+
+    // Callback from TaskFragment after recognizing text from the image (note creation, step 2 of 3).
+    public void onTextRecognized(long lastModified, final String imgPath, final String text) {
+        String textReady = text;
+        if (textReady == null) {
+            Toast.makeText(this, R.string.textRecognitionFailed, Toast.LENGTH_SHORT).show();
+            textReady = "";
+        }
+        mTaskFragment.newNote(lastModified, imgPath, textReady);
+    }
+
+    // Callback from TaskFragment after creating a note (note creation, step 3 of 3).
     public void onPostExecuteNewNote() {
         updateList();
     }

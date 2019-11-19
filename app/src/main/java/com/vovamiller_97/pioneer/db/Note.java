@@ -4,8 +4,12 @@ import androidx.annotation.NonNull;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 
 public class Note {
+
+    private static final Random RANDOMIZER = new Random(System.currentTimeMillis());
+    private static final int MAX_RAND = 1000000;
 
     private long id;
     private String title;
@@ -82,5 +86,10 @@ public class Note {
 
     public void setDate(long dateSerialized) {
         date = new Date(dateSerialized);
+    }
+
+    public void generateTitle() {
+        int r = RANDOMIZER.nextInt(MAX_RAND);
+        setTitle("Note " + r);
     }
 }

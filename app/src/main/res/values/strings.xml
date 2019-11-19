@@ -12,6 +12,13 @@
 
     <string name="fake_date">2019.10.11</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="need_permission">Allow camera permission to use camera</string>
+    <string name="permission_in_settings">Allow camera permission in system settings</string>
+    <string name="fab_open_camera">Open camera</string>
+    <string name="take_photo">Take photo</string>
+    <string name="saveNoteButton">Save note</string>
+    <string name="noteTextHint">Note text</string>
+    <string name="noteSaveSuccess">The note is saved!</string>
+    <string name="noteSaveFail">Save failed!</string>
+
 </resources>

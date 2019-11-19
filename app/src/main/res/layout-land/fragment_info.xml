@@ -5,19 +5,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:padding="16dp"
-    android:background="@android:color/white"
+    android:paddingTop="16dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:background="@color/colorBackground"
     tools:context=".InfoFragment">
 
-    <ImageView
-        android:id="@+id/imgInfo"
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:layout_gravity="center_vertical"
-        android:scaleType="fitCenter"
-        android:contentDescription="@string/image_view_des_def"
-        android:src="@drawable/nodata" />
+        android:layout_gravity="center_vertical">
+        <ProgressBar
+            android:id="@+id/imgInfoLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true" />
+        <ImageView
+            android:id="@+id/imgInfo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="16dp"
+            android:layout_gravity="center"
+            android:alpha="0"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/image_view_des_def"
+            android:src="@drawable/ic_panorama_light_32dp" />
+    </FrameLayout>
 
     <ScrollView
         android:id="@+id/infoScrollView"
@@ -25,13 +40,18 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:layout_marginLeft="16dp">
-        <TextView
+        <EditText
             android:id="@+id/textInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
+            android:background="@android:color/transparent"
             android:textSize="14sp"
             android:textColor="@color/colorGrayText"
-            android:text="@string/temp_text" />
+            android:inputType="textMultiLine|textNoSuggestions"
+            android:hint="@string/noteTextHint"
+            android:imeOptions="actionNone"
+            android:importantForAutofill="no" />
     </ScrollView>
 
 </LinearLayout>

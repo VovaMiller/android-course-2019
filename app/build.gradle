@@ -47,4 +47,7 @@ dependencies {
     implementation "androidx.camera:camera-view:$camerax_view_version"
 
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.firebase:firebase-ml-vision:24.0.1'
 }
+
+apply plugin: 'com.google.gms.google-services'

@@ -20,5 +20,6 @@
     <string name="noteTextHint">Note text</string>
     <string name="noteSaveSuccess">The note is saved!</string>
     <string name="noteSaveFail">Save failed!</string>
+    <string name="textRecognitionFailed">Text recognition failed!</string>
 
 </resources>

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "273316147593",
+    "firebase_url": "https://pioneer-project-9afa8.firebaseio.com",
+    "project_id": "pioneer-project-9afa8",
+    "storage_bucket": "pioneer-project-9afa8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273316147593:android:045c7b7c22e4cccc0eb158",
+        "android_client_info": {
+          "package_name": "com.vovamiller_97.pioneer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "273316147593-1l64ha3kdf34295mptqomiskb1g3uvf1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJP33XBF3yo-iGWn5P4VxttAh1hyI_HuY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "273316147593-1l64ha3kdf34295mptqomiskb1g3uvf1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

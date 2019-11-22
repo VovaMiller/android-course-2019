@@ -21,4 +21,11 @@
     <string name="noteSaveFail">Save failed!</string>
     <string name="textRecognitionFailed">Text recognition failed!</string>
 
+    <string name="popupmenu_share">Share</string>
+    <string name="popupmenu_delete">Delete</string>
+    <string name="dialog_delete_title">Delete note?</string>
+    <string name="dialog_delete_text">There\'ll be no way back!</string>
+    <string name="dialog_delete_ok">Delete</string>
+    <string name="dialog_delete_cancel">Cancel</string>
+
 </resources>

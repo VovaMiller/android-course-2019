@@ -36,7 +36,7 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
         itemView.setOnClickListener(view -> mListener.onChooseNote(id, imgPath));
 
         ImageView noteButtonMore = itemView.findViewById(R.id.cardViewMore);
-        noteButtonMore.setOnClickListener(view -> onButtonMoreClicked());
+        noteButtonMore.setOnClickListener(view -> mListener.onButtonMoreClicked(view, id));
     }
 
     public void bind(final Note note) {

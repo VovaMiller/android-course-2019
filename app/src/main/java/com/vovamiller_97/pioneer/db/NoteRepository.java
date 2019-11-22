@@ -31,6 +31,20 @@ public class NoteRepository {
         }
     }
 
+    public void delete(final long noteId) {
+        try {
+            SQLiteDatabase database = databaseHolder.open();
+
+            database.delete(
+                    NoteContract.TABLE_NAME,
+                    NoteContract.Columns._ID + "=?",
+                    new String[] {String.valueOf(noteId)}
+            );
+        } finally {
+            databaseHolder.close();
+        }
+    }
+
     public List<Note> loadAll() {
         List<Note> notesList = new ArrayList<>();
         Cursor cursor = null;

@@ -110,7 +110,7 @@ public class ListFragment extends Fragment {
             mListener = (OnInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnInteractionListener");
+                    + " must implement ListFragment.OnInteractionListener");
         }
     }
 
@@ -122,6 +122,7 @@ public class ListFragment extends Fragment {
 
     public interface OnInteractionListener {
         void onChooseNote(final long id, final String imgPath);
+        void onButtonMoreClicked(View view, long id);
     }
 
     @Override

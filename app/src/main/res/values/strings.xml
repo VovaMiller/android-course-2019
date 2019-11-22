@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">Pioneer</string>
     <string name="title_main">Notes</string>
-    <string name="title_info">Note 1</string>
 
     <string name="image_view_des_def">IMAGE</string>
-    <string name="temp_title">Title</string>
+    <string name="button_more_des">MORE</string>
     <string name="temp_text">Note text</string>
     <string name="temp_date">yyyy.MM.dd</string>
 

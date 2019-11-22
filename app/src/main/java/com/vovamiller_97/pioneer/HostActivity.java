@@ -23,13 +23,11 @@ public class HostActivity extends AppCompatActivity
         TaskFragment.TaskCallbacks {
 
     private static final String NOTE_ID_KEY = "NOTE_ID_KEY";
-    private static final String NOTE_TITLE_KEY = "NOTE_TITLE_KEY";
     private static final String TAG_LIST = "TAG_LIST";
     private static final String TAG_INFO = "TAG_INFO";
     private static final String TAG_TASK_NEW_NOTE = "TAG_TASK_NEW_NOTE";
 
     private Long noteId;
-    private String noteTitle;
     private FloatingActionButton fab;
     private TaskFragment mTaskFragment;
 
@@ -50,7 +48,6 @@ public class HostActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             noteId = null;
-            noteTitle = null;
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.hostActivityContainer, ListFragment.newInstance(), TAG_LIST)
@@ -61,11 +58,10 @@ public class HostActivity extends AppCompatActivity
             if (noteId == -1) {
                 noteId = null;
             }
-            noteTitle = savedInstanceState.getString(NOTE_TITLE_KEY, null);
         }
 
+        setTitle(R.string.title_main);
         setListeners();
-        updateTitle();
         updateFloatingButtonState();
     }
 
@@ -142,7 +138,7 @@ public class HostActivity extends AppCompatActivity
         }
     }
 
-    public void onChooseNote(final long id, final String title, final String imgPath) {
+    public void onChooseNote(final long id, final String imgPath) {
         FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(TAG_INFO) != null) {
             fm.popBackStack();
@@ -162,8 +158,6 @@ public class HostActivity extends AppCompatActivity
                 .commit();
 
         noteId = id;
-        noteTitle = title;
-        updateTitle();
         invalidateOptionsMenu();
     }
 
@@ -180,8 +174,6 @@ public class HostActivity extends AppCompatActivity
             super.onBackPressed();
             fab.setVisibility(View.VISIBLE);
             noteId = null;
-            noteTitle = null;
-            updateTitle();
             invalidateOptionsMenu();
         } else {
             Log.w("FragmentManager", "backStackSize == " + backStackSize);
@@ -196,22 +188,7 @@ public class HostActivity extends AppCompatActivity
         } else {
             outState.putLong(NOTE_ID_KEY, -1);
         }
-        if (noteTitle != null) {
-            outState.putString(NOTE_TITLE_KEY, noteTitle);
-        }
         super.onSaveInstanceState(outState);
-    }
-
-    private void updateTitle() {
-        boolean isLandscape = getResources().getBoolean(R.bool.is_landscape);
-        boolean isPhone = getResources().getBoolean(R.bool.is_phone);
-        if ((noteId == null) || (isLandscape && !isPhone)) {
-            setTitle(R.string.title_main);
-        } else if (noteTitle != null) {
-            setTitle(noteTitle);
-        } else {
-            setTitle(R.string.title_main);
-        }
     }
 
     private void updateFloatingButtonState() {

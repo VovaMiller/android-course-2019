@@ -1,7 +1,5 @@
 package com.vovamiller_97.pioneer.db;
 
-import com.vovamiller_97.pioneer.R;
-
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,7 +22,6 @@ public class NoteRepository {
 
             ContentValues contentValues = new ContentValues();
             contentValues.put(NoteContract.Columns.TEXT, note.getText());
-            contentValues.put(NoteContract.Columns.TITLE, note.getTitle());
             contentValues.put(NoteContract.Columns.IMAGE, note.getImage());
             contentValues.put(NoteContract.Columns.DATE, note.getDateSerialized());
 
@@ -45,7 +42,6 @@ public class NoteRepository {
                     new String[] {
                             NoteContract.Columns._ID,
                             NoteContract.Columns.TEXT,
-                            NoteContract.Columns.TITLE,
                             NoteContract.Columns.IMAGE,
                             NoteContract.Columns.DATE
                     },
@@ -60,7 +56,6 @@ public class NoteRepository {
                 Note note = new Note();
                 note.setId(cursor.getLong(cursor.getColumnIndex(NoteContract.Columns._ID)));
                 note.setText(cursor.getString(cursor.getColumnIndex(NoteContract.Columns.TEXT)));
-                note.setTitle(cursor.getString(cursor.getColumnIndex(NoteContract.Columns.TITLE)));
                 note.setImage(cursor.getString(cursor.getColumnIndex(NoteContract.Columns.IMAGE)));
                 note.setDate(cursor.getLong(cursor.getColumnIndex(NoteContract.Columns.DATE)));
                 notesList.add(note);
@@ -86,7 +81,6 @@ public class NoteRepository {
                     new String[] {
                             NoteContract.Columns._ID,
                             NoteContract.Columns.TEXT,
-                            NoteContract.Columns.TITLE,
                             NoteContract.Columns.IMAGE,
                             NoteContract.Columns.DATE
                     },
@@ -101,7 +95,6 @@ public class NoteRepository {
                 note = new Note();
                 note.setId(cursor.getLong(cursor.getColumnIndex(NoteContract.Columns._ID)));
                 note.setText(cursor.getString(cursor.getColumnIndex(NoteContract.Columns.TEXT)));
-                note.setTitle(cursor.getString(cursor.getColumnIndex(NoteContract.Columns.TITLE)));
                 note.setImage(cursor.getString(cursor.getColumnIndex(NoteContract.Columns.IMAGE)));
                 note.setDate(cursor.getLong(cursor.getColumnIndex(NoteContract.Columns.DATE)));
             }

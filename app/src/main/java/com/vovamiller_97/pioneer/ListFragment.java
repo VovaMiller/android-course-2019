@@ -121,7 +121,7 @@ public class ListFragment extends Fragment {
     }
 
     public interface OnInteractionListener {
-        void onChooseNote(final long id, final String title, final String imgPath);
+        void onChooseNote(final long id, final String imgPath);
     }
 
     @Override

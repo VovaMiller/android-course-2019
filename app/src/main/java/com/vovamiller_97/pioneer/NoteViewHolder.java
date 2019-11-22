@@ -3,6 +3,7 @@ package com.vovamiller_97.pioneer;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,26 +21,25 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
             Locale.ENGLISH);
 
     private ListFragment.OnInteractionListener mListener;
-    private TextView noteTitleTextView;
     private TextView noteTextTextView;
     private TextView noteDateTextView;
     private ImageView noteImageView;
     private long id;
-    private String title;
     private String imgPath;
 
     public NoteViewHolder(final View itemView, ListFragment.OnInteractionListener listener) {
         super(itemView);
         mListener = listener;
-        noteTitleTextView = itemView.findViewById(R.id.cardViewTitle);
         noteTextTextView = itemView.findViewById(R.id.cardViewText);
         noteDateTextView = itemView.findViewById(R.id.cardViewDate);
         noteImageView = itemView.findViewById(R.id.cardViewImg);
-        itemView.setOnClickListener(view -> mListener.onChooseNote(id, title, imgPath));
+        itemView.setOnClickListener(view -> mListener.onChooseNote(id, imgPath));
+
+        ImageView noteButtonMore = itemView.findViewById(R.id.cardViewMore);
+        noteButtonMore.setOnClickListener(view -> onButtonMoreClicked());
     }
 
     public void bind(final Note note) {
-        noteTitleTextView.setText(note.getTitle());
         noteTextTextView.setText(note.getText());
         noteDateTextView.setText(SDF.format(note.getDate()));
 
@@ -51,7 +51,6 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
         }
 
         id = note.getId();
-        title = note.getTitle();
         imgPath = imagePath;
     }
 
@@ -83,6 +82,10 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
                         }
                     }
                 });
+    }
+
+    private void onButtonMoreClicked() {
+        Log.d("MOREMORE", "onButtonMoreClicked()");
     }
 
 }

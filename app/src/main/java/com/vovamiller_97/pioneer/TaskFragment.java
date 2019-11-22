@@ -64,7 +64,6 @@ public class TaskFragment extends Fragment {
         protected Void doInBackground(Void... ignore) {
             // Adding a new note.
             Note note = new Note();
-            note.generateTitle();
             note.setText(text);
             note.setDate(lastModified);
             note.setImage(imgPath);

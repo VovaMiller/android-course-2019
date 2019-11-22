@@ -17,34 +17,23 @@ public class AppUtils {
 
     public static final String SUFFIX_COMPRESSED_COPY = "-comp";
 
-    public static void setExifRotation(@NonNull final File file, int angle) {
-        int nAngle = ((angle % 360) + 360) % 360;
-        int orientation = ExifInterface.ORIENTATION_UNDEFINED;
-        switch (nAngle) {
-            case 0:
-                orientation = ExifInterface.ORIENTATION_ROTATE_90;
-                break;
-            case 90:
-                orientation = ExifInterface.ORIENTATION_NORMAL;
-                break;
-            case 180:
-                orientation = ExifInterface.ORIENTATION_ROTATE_270;
-                break;
-            case 270:
-                orientation = ExifInterface.ORIENTATION_ROTATE_180;
-                break;
-        }
+    public static void copyExifData(final String fromPath, final String toPath) {
         try {
-            ExifInterface exifInterface = new ExifInterface(file.getAbsolutePath());
-            exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(orientation));
-            exifInterface.saveAttributes();
+            ExifInterface fromExif = new ExifInterface(fromPath);
+            String exifOrientation = fromExif.getAttribute(ExifInterface.TAG_ORIENTATION);
+
+            if (exifOrientation != null) {
+                ExifInterface toExif = new ExifInterface(toPath);
+                toExif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+                toExif.saveAttributes();
+            }
         } catch (IOException e) {
-            Log.e("CameraActivity", "IOException");
+            Log.e("AppUtils", "copyExifData failed!");
             e.printStackTrace();
         }
     }
 
-    public static File saveCompressedCopy(@NonNull final File file,
+    public static void saveCompressedCopy(@NonNull final File file,
                                     @NonNull final Resources resources,
                                     @NonNull final File filesDir) {
         Bitmap bitmapOriginal = BitmapFactory.decodeFile(file.getAbsolutePath());
@@ -70,7 +59,7 @@ public class AppUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return fileCompressed;
+        AppUtils.copyExifData(file.getAbsolutePath(), fileCompressed.getAbsolutePath());
     }
 
 }

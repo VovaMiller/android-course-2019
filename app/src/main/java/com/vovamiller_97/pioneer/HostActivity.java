@@ -141,7 +141,8 @@ public class HostActivity extends AppCompatActivity
     public void onChooseNote(final long id, final String imgPath) {
         FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(TAG_INFO) != null) {
-            fm.popBackStack();
+            // InfoFragment already exists => ignore switch attempt.
+            return;
         } else {
             fab.setVisibility(View.GONE);
         }

@@ -24,8 +24,6 @@ import java.io.IOException;
  */
 public class TaskFragment extends Fragment {
 
-    public static final int CODE_SHARE = 420;
-
     private TaskCallbacks mCallbacks;
 
     @Override
@@ -154,33 +152,6 @@ public class TaskFragment extends Fragment {
         }
     }
 
-    private class ExtractNoteTextTask extends AsyncTask<Void, Void, String> {
-        private final int code;
-        private final long noteId;
-
-        public ExtractNoteTextTask(final int code, final long noteId) {
-            this.code = code;
-            this.noteId = noteId;
-        }
-
-        @Override
-        protected String doInBackground(Void... ignore) {
-            NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
-            Note note = nr.loadNote(noteId);
-            if (note != null) {
-                return note.getText();
-            } else {
-                Log.d("TaskFragment", "Failed to load note for text extraction!");
-                return "";
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String text) {
-            if (mCallbacks != null) mCallbacks.onNoteTextExtracted(code, text);
-        }
-    }
-
     public void newNote(long lastModified, final String imgPath, final String text) {
         new NewNoteTask(lastModified, imgPath, text).execute();
     }
@@ -208,16 +179,11 @@ public class TaskFragment extends Fragment {
                         lastModified, imgPath, null));
     }
 
-    public void extractNoteText(final int code, final long noteId) {
-        new ExtractNoteTextTask(code, noteId).execute();
-    }
-
     public interface TaskCallbacks {
         void onPostExecuteNewNote();
         void onPostExecuteUpdateText(boolean failed);
         void onBitmapLoaded(long lastModified, final String imgPath, final Bitmap bitmap);
         void onTextRecognized(long lastModified, final String imgPath, final String text);
         void onPostExecuteDeleteNote();
-        void onNoteTextExtracted(final int code, final String text);
     }
 }

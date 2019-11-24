@@ -56,11 +56,6 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
         takePictureButton = findViewById(R.id.takePictureButton);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     private void requestPermission() {
         ActivityCompat.requestPermissions(
                 this,

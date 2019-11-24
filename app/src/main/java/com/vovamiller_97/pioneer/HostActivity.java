@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.vovamiller_97.pioneer.db.Note;
 
 public class HostActivity extends AppCompatActivity
         implements ListFragment.OnInteractionListener,
@@ -137,13 +138,6 @@ public class HostActivity extends AppCompatActivity
         updateList();
     }
 
-    // Callback from TaskFragment after extracting text from the note.
-    public void onNoteTextExtracted(final int code, final String text) {
-        if (code == TaskFragment.CODE_SHARE) {
-            shareText(text);
-        }
-    }
-
     // Update the list of notes.
     private void updateList() {
         FragmentManager fm = getSupportFragmentManager();
@@ -153,7 +147,7 @@ public class HostActivity extends AppCompatActivity
         }
     }
 
-    public void onChooseNote(final long id, final String imgPath) {
+    public void onChooseNote(final Note note) {
         FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(TAG_INFO) != null) {
             // InfoFragment already exists => ignore switch attempt.
@@ -169,50 +163,21 @@ public class HostActivity extends AppCompatActivity
                         R.anim.enter_from_left,
                         R.anim.exit_to_right
                 )
-                .replace(R.id.hostActivityContainer2, InfoFragment.newInstance(id, imgPath), TAG_INFO)
+                .replace(R.id.hostActivityContainer2, InfoFragment.newInstance(note), TAG_INFO)
                 .addToBackStack(null)
                 .commit();
 
-        noteId = id;
+        noteId = note.getId();
         invalidateOptionsMenu();
     }
 
-    public void onButtonMoreClicked(View view, long id) {
-        PopupMenu popupMenu = new PopupMenu(this, view);
-        popupMenu.inflate(R.menu.popupmenu);
-        popupMenu.setOnMenuItemClickListener(item -> onPopupMenuItemClick(item, id));
-        popupMenu.show();
-    }
-
-    private boolean onPopupMenuItemClick(MenuItem item, long id) {
-        switch (item.getItemId()) {
-            case R.id.popupShare:
-                onButtonShareClicked(id);
-                return true;
-            case R.id.popupDelete:
-                DeleteDialogFragment deleteDialogFragment = new DeleteDialogFragment();
-                deleteDialogFragment.setNoteId(id);
-                deleteDialogFragment.show(getSupportFragmentManager(), TAG_DELETE_DIALOG);
-                return true;
-            default:
-                return false;
-        }
+    public void onDeleteDialogRequired(final long id) {
+        DeleteDialogFragment deleteDialogFragment = DeleteDialogFragment.newInstance(id);
+        deleteDialogFragment.show(getSupportFragmentManager(), TAG_DELETE_DIALOG);
     }
 
     public void onDeleteDialogConfirmed(final long id) {
         mTaskFragment.deleteNote(id);
-    }
-
-    private void onButtonShareClicked(final long id) {
-        mTaskFragment.extractNoteText(TaskFragment.CODE_SHARE, id);
-    }
-
-    private void shareText(final String text) {
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, text);
-        sendIntent.setType("text/plain");
-        startActivity(sendIntent);
     }
 
     @Override

@@ -11,11 +11,29 @@ import androidx.fragment.app.DialogFragment;
 
 public class DeleteDialogFragment extends DialogFragment {
 
+    private static final String ID_KEY = "ID_KEY";
+
     private OnInteractionListener mListener;
     private long noteId;
 
-    public void setNoteId(long noteId) {
-        this.noteId = noteId;
+    public DeleteDialogFragment() {}
+
+    public static DeleteDialogFragment newInstance(final long id) {
+        DeleteDialogFragment fragment = new DeleteDialogFragment();
+        Bundle args = new Bundle();
+        args.putLong(ID_KEY, id);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            noteId = getArguments().getLong(ID_KEY);
+        } else {
+            noteId = -1;
+        }
     }
 
     @NonNull

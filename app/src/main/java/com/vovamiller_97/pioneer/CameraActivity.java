@@ -35,9 +35,6 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
 
     private CameraView cameraView;
     private View takePictureButton;
-    private OrientationDetector mOrientationDetector;
-    private int angle;
-    private int shotAngle;
     private boolean shotTaken;
 
     @Override
@@ -46,39 +43,17 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
         setContentView(R.layout.activity_camera);
 
         shotTaken = false;
-        shotAngle = 0;
 
         // Camera view.
-        if (savedInstanceState == null) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                    == PackageManager.PERMISSION_GRANTED) {
-                startCamera();
-            } else {
-                requestPermission();
-            }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            startCamera();
+        } else {
+            requestPermission();
         }
 
         // "Take shot" button.
         takePictureButton = findViewById(R.id.takePictureButton);
-        mOrientationDetector = new OrientationDetector(this) {
-            @Override
-            public int fromSensor(int sensorAngle) {
-                return 360 - sensorAngle;
-            }
-
-            @Override
-            public void onOrientationChanged(int rightAngle) {
-                updateOrientation(rightAngle);
-            }
-        };
-        angle = 0;
-        mOrientationDetector.enable();
-    }
-
-    @Override
-    protected void onDestroy() {
-        mOrientationDetector.disable();
-        super.onDestroy();
     }
 
     private void requestPermission() {
@@ -122,7 +97,6 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
 
     private void pressButton() {
         if (!shotTaken) {
-            shotAngle = angle;
             shotTaken = true;
             cameraView.takePicture(
                     generatePictureFile(),
@@ -146,10 +120,8 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
     @Override
     public void onImageSaved(@NonNull final File file) {
         // Save compressed copy of an image for thumbnails (preview).
-        new CreateCompressedCopy(file, getResources(), getFilesDir(), shotAngle).execute();
-
-        // Rotate the image by modifying metadata.
-        AppUtils.setExifRotation(file, shotAngle);
+        // This lets Picasso load thumbnails significantly faster.
+        new CreateCompressedCopy(file, getResources(), getFilesDir()).execute();
 
         // Send info back to HostActivity and finish.
         Intent output = new Intent();
@@ -164,22 +136,18 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
         private final File file;
         private final Resources resources;
         private final File filesDir;
-        private int shotAngle;
 
         public CreateCompressedCopy(@NonNull File file,
                                     @NonNull final Resources resources,
-                                    @NonNull final File filesDir,
-                                    int shotAngle) {
+                                    @NonNull final File filesDir) {
             this.file = file;
             this.resources = resources;
             this.filesDir = filesDir;
-            this.shotAngle = shotAngle;
         }
 
         @Override
         protected Void doInBackground(final Void... voids) {
-            File compressedFile = AppUtils.saveCompressedCopy(file, resources, filesDir);
-            AppUtils.setExifRotation(compressedFile, shotAngle);
+            AppUtils.saveCompressedCopy(file, resources, filesDir);
             return null;
         }
     }
@@ -194,19 +162,6 @@ public class CameraActivity extends AppCompatActivity implements ImageCapture.On
 
     private File generatePictureFile() {
         return new File(getFilesDir(), UUID.randomUUID().toString());
-    }
-
-    private void updateOrientation(int angle) {
-        RotateAnimation rotate = new RotateAnimation(
-                this.angle, angle,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f);
-        rotate.setDuration(300);
-        rotate.setInterpolator(new LinearInterpolator());
-        rotate.setFillAfter(true);
-        takePictureButton.startAnimation(rotate);
-
-        this.angle = angle;
     }
 
 }

@@ -13,23 +13,25 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.vovamiller_97.pioneer.db.Note;
 
 public class HostActivity extends AppCompatActivity
         implements ListFragment.OnInteractionListener,
-        TaskFragment.TaskCallbacks {
+        TaskFragment.TaskCallbacks,
+        DeleteDialogFragment.OnInteractionListener {
 
     private static final String NOTE_ID_KEY = "NOTE_ID_KEY";
-    private static final String NOTE_TITLE_KEY = "NOTE_TITLE_KEY";
     private static final String TAG_LIST = "TAG_LIST";
     private static final String TAG_INFO = "TAG_INFO";
+    private static final String TAG_DELETE_DIALOG = "TAG_DELETE_DIALOG";
     private static final String TAG_TASK_NEW_NOTE = "TAG_TASK_NEW_NOTE";
 
     private Long noteId;
-    private String noteTitle;
     private FloatingActionButton fab;
     private TaskFragment mTaskFragment;
 
@@ -50,7 +52,6 @@ public class HostActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             noteId = null;
-            noteTitle = null;
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.hostActivityContainer, ListFragment.newInstance(), TAG_LIST)
@@ -61,11 +62,10 @@ public class HostActivity extends AppCompatActivity
             if (noteId == -1) {
                 noteId = null;
             }
-            noteTitle = savedInstanceState.getString(NOTE_TITLE_KEY, null);
         }
 
+        setTitle(R.string.title_main);
         setListeners();
-        updateTitle();
         updateFloatingButtonState();
     }
 
@@ -133,6 +133,11 @@ public class HostActivity extends AppCompatActivity
         }
     }
 
+    // Callback from TaskFragment after deleting a note.
+    public void onPostExecuteDeleteNote() {
+        updateList();
+    }
+
     // Update the list of notes.
     private void updateList() {
         FragmentManager fm = getSupportFragmentManager();
@@ -142,10 +147,11 @@ public class HostActivity extends AppCompatActivity
         }
     }
 
-    public void onChooseNote(final long id, final String title, final String imgPath) {
+    public void onChooseNote(final Note note) {
         FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(TAG_INFO) != null) {
-            fm.popBackStack();
+            // InfoFragment already exists => ignore switch attempt.
+            return;
         } else {
             fab.setVisibility(View.GONE);
         }
@@ -157,14 +163,21 @@ public class HostActivity extends AppCompatActivity
                         R.anim.enter_from_left,
                         R.anim.exit_to_right
                 )
-                .replace(R.id.hostActivityContainer2, InfoFragment.newInstance(id, imgPath), TAG_INFO)
+                .replace(R.id.hostActivityContainer2, InfoFragment.newInstance(note), TAG_INFO)
                 .addToBackStack(null)
                 .commit();
 
-        noteId = id;
-        noteTitle = title;
-        updateTitle();
+        noteId = note.getId();
         invalidateOptionsMenu();
+    }
+
+    public void onDeleteDialogRequired(final long id) {
+        DeleteDialogFragment deleteDialogFragment = DeleteDialogFragment.newInstance(id);
+        deleteDialogFragment.show(getSupportFragmentManager(), TAG_DELETE_DIALOG);
+    }
+
+    public void onDeleteDialogConfirmed(final long id) {
+        mTaskFragment.deleteNote(id);
     }
 
     @Override
@@ -180,8 +193,6 @@ public class HostActivity extends AppCompatActivity
             super.onBackPressed();
             fab.setVisibility(View.VISIBLE);
             noteId = null;
-            noteTitle = null;
-            updateTitle();
             invalidateOptionsMenu();
         } else {
             Log.w("FragmentManager", "backStackSize == " + backStackSize);
@@ -196,22 +207,7 @@ public class HostActivity extends AppCompatActivity
         } else {
             outState.putLong(NOTE_ID_KEY, -1);
         }
-        if (noteTitle != null) {
-            outState.putString(NOTE_TITLE_KEY, noteTitle);
-        }
         super.onSaveInstanceState(outState);
-    }
-
-    private void updateTitle() {
-        boolean isLandscape = getResources().getBoolean(R.bool.is_landscape);
-        boolean isPhone = getResources().getBoolean(R.bool.is_phone);
-        if ((noteId == null) || (isLandscape && !isPhone)) {
-            setTitle(R.string.title_main);
-        } else if (noteTitle != null) {
-            setTitle(noteTitle);
-        } else {
-            setTitle(R.string.title_main);
-        }
     }
 
     private void updateFloatingButtonState() {

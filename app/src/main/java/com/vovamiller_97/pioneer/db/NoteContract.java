@@ -10,7 +10,6 @@ public class NoteContract {
 
     public interface Columns extends BaseColumns {
         String TEXT = "name";
-        String TITLE = "title";
         String IMAGE = "image";
         String DATE = "date";
     }
@@ -23,7 +22,6 @@ public class NoteContract {
                         + " ( "
                         + Columns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                         + Columns.TEXT + " TEXT NOT NULL,"
-                        + Columns.TITLE + " TEXT NOT NULL,"
                         + Columns.IMAGE + " TEXT NOT NULL,"
                         + Columns.DATE + " INTEGER NOT NULL"
                         + " );"

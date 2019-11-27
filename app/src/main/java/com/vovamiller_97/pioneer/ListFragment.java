@@ -62,7 +62,7 @@ public class ListFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.getRecycledViewPool().setMaxRecycledViews(0, 10);
 
-        adapter = new NoteAdapter(mListener);
+        adapter = new NoteAdapter(getContext(), mListener);
         recyclerView.setAdapter(adapter);
     }
 
@@ -110,7 +110,7 @@ public class ListFragment extends Fragment {
             mListener = (OnInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnInteractionListener");
+                    + " must implement ListFragment.OnInteractionListener");
         }
     }
 
@@ -121,7 +121,8 @@ public class ListFragment extends Fragment {
     }
 
     public interface OnInteractionListener {
-        void onChooseNote(final long id, final String title, final String imgPath);
+        void onChooseNote(final Note note);
+        void onDeleteDialogRequired(final long id);
     }
 
     @Override

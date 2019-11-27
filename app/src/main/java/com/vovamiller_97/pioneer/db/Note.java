@@ -12,14 +12,12 @@ public class Note {
     private static final int MAX_RAND = 1000000;
 
     private long id;
-    private String title;
     private String text;
     private Date date;
     private String image;
 
     public Note() {
         id = -1;
-        title = "TITLE";
         text = "TEXT";
         date = createDefaultDate();
         image = "";
@@ -28,7 +26,6 @@ public class Note {
     public Note(final long id, @NonNull final String title, @NonNull final String text,
                 final Date date, final String image) {
         this.id = id;
-        this.title = title;
         this.text = text;
         setDate(date);
         setImage(image);
@@ -42,10 +39,6 @@ public class Note {
 
     public long getId() {
         return id;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     public String getText() {
@@ -63,8 +56,6 @@ public class Note {
     public long getDateSerialized() { return date.getTime(); }
 
     public void setId(long id) { this.id = id; }
-
-    public void setTitle(@NonNull String title) { this.title = title; }
 
     public void setText(@NonNull String text) { this.text = text; }
 
@@ -88,8 +79,4 @@ public class Note {
         date = new Date(dateSerialized);
     }
 
-    public void generateTitle() {
-        int r = RANDOMIZER.nextInt(MAX_RAND);
-        setTitle("Note " + r);
-    }
 }

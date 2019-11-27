@@ -1,6 +1,7 @@
 package com.vovamiller_97.pioneer;
 
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +16,13 @@ import java.util.List;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
 
+    private Context mContext;
     private ListFragment.OnInteractionListener mListener;
     private List<Note> noteList = new ArrayList<>();
 
-    public NoteAdapter(ListFragment.OnInteractionListener listener) {
+    public NoteAdapter(Context context, ListFragment.OnInteractionListener listener) {
         super();
+        mContext = context;
         mListener = listener;
     }
 
@@ -35,7 +38,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
                 R.layout.note_list_item, parent,
                 false
         );
-        return new NoteViewHolder(view, mListener);
+        return new NoteViewHolder(view, mContext, mListener);
     }
 
     @Override

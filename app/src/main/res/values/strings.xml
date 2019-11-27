@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">Pioneer</string>
     <string name="title_main">Notes</string>
-    <string name="title_info">Note 1</string>
 
     <string name="image_view_des_def">IMAGE</string>
-    <string name="temp_title">Title</string>
+    <string name="button_more_des">MORE</string>
     <string name="temp_text">Note text</string>
     <string name="temp_date">yyyy.MM.dd</string>
 
@@ -21,5 +20,12 @@
     <string name="noteSaveSuccess">The note is saved!</string>
     <string name="noteSaveFail">Save failed!</string>
     <string name="textRecognitionFailed">Text recognition failed!</string>
+
+    <string name="popupmenu_share">Share</string>
+    <string name="popupmenu_delete">Delete</string>
+    <string name="dialog_delete_title">Delete note?</string>
+    <string name="dialog_delete_text">There\'ll be no way back!</string>
+    <string name="dialog_delete_ok">Delete</string>
+    <string name="dialog_delete_cancel">Cancel</string>
 
 </resources>

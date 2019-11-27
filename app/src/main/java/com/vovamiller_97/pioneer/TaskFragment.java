@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -64,7 +65,6 @@ public class TaskFragment extends Fragment {
         protected Void doInBackground(Void... ignore) {
             // Adding a new note.
             Note note = new Note();
-            note.generateTitle();
             note.setText(text);
             note.setDate(lastModified);
             note.setImage(imgPath);
@@ -77,6 +77,29 @@ public class TaskFragment extends Fragment {
         protected void onPostExecute(Void ignore) {
             if (mCallbacks != null) {
                 mCallbacks.onPostExecuteNewNote();
+            }
+        }
+    }
+
+    private class DeleteNoteTask extends AsyncTask<Void, Void, Void> {
+        private long noteId;
+
+        public DeleteNoteTask(long noteId) {
+            this.noteId = noteId;
+        }
+
+        @Override
+        protected Void doInBackground(Void... ignore) {
+            // Removing the note.
+            NoteRepository nr = new NoteRepository(App.getDatabaseHolder());
+            nr.delete(noteId);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void ignore) {
+            if (mCallbacks != null) {
+                mCallbacks.onPostExecuteDeleteNote();
             }
         }
     }
@@ -133,6 +156,10 @@ public class TaskFragment extends Fragment {
         new NewNoteTask(lastModified, imgPath, text).execute();
     }
 
+    public void deleteNote(final long noteId) {
+        new DeleteNoteTask(noteId).execute();
+    }
+
     public void updateText(long id, final String newText) {
         new UpdateTextTask(id, newText).execute();
     }
@@ -157,5 +184,6 @@ public class TaskFragment extends Fragment {
         void onPostExecuteUpdateText(boolean failed);
         void onBitmapLoaded(long lastModified, final String imgPath, final Bitmap bitmap);
         void onTextRecognized(long lastModified, final String imgPath, final String text);
+        void onPostExecuteDeleteNote();
     }
 }

@@ -7,3 +7,5 @@
 /captures
 .externalNativeBuild
 .cxx
+app/keystores/keystore-private.jks
+app/release-private.properties

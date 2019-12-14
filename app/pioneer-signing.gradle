@@ -1,0 +1,20 @@
+def propertiesFilename = ""
+if (project.file("release-private.properties").exists()) {
+    propertiesFilename = "release-private.properties"
+} else {
+    propertiesFilename = "release-public.properties"
+}
+
+def singingProperties = new Properties()
+singingProperties.load(new FileInputStream(file(propertiesFilename)))
+
+android {
+    signingConfigs {
+        release {
+            keyAlias singingProperties.releaseSignKeyAlias
+            keyPassword singingProperties.releaseSignKeyPassword
+            storeFile file(singingProperties.releaseStoreFilePath)
+            storePassword singingProperties.releaseStorePassword
+        }
+    }
+}
